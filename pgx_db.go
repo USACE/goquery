@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/georgysavva/scany/pgxscan"
@@ -107,7 +108,8 @@ type PgxDb struct {
 }
 
 func NewPgxConnection(config *RdbmsConfig) (PgxDb, error) {
-	dburl := fmt.Sprintf("user=%s password=%s host=%s port=%s database=%s sslmode=disable",
+
+	dburl := fmt.Sprintf("user=%s password=%s host=%s port=%s database=%s",
 		config.Dbuser, config.Dbpass, config.Dbhost, config.Dbport, config.Dbname)
 
 	if config.PoolMaxConns > 0 {
@@ -123,6 +125,11 @@ func NewPgxConnection(config *RdbmsConfig) (PgxDb, error) {
 		dburl = fmt.Sprintf("%s %s=%s", dburl, "pool_max_conn_idle_time", config.PoolMaxConnIdle)
 	}
 
+	var dburlsuffix string = config.DbDriverSettings
+	if !strings.Contains(dburlsuffix, "sslmode") {
+		dburlsuffix = fmt.Sprintf("%s %s", dburlsuffix, "sslmode=require")
+	}
+	dburl = fmt.Sprintf("%s %s", dburl, dburlsuffix)
 	con, err := pgxpool.Connect(context.Background(), dburl)
 	return PgxDb{con, pgDialect}, err
 }

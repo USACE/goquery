@@ -40,6 +40,7 @@ func RdbmsConfigFromEnv() *RdbmsConfig {
 	dbConfig.DbDriver = os.Getenv("DBDRIVER")
 	dbConfig.DbStore = os.Getenv("DBSTORE")
 	dbConfig.ExternalLib = os.Getenv("EXTERNAL_LIB")
+	dbConfig.DbDriverSettings = os.Getenv("DBDRIVER_PARAMS")
 
 	if dbConfig.Dbport == "" {
 		dbConfig.Dbport = "5432"
