@@ -26,7 +26,7 @@ For Postgres databases it wraps pgx and for sql interface db connections it wrap
 
 ```go
 // Configure database connection
-config := dq.RdbmsConfig{
+config := goquery.RdbmsConfig{
     Dbuser:   "myuser",
     Dbpass:   "mypass",
     Dbhost:   "localhost",
@@ -37,7 +37,7 @@ config := dq.RdbmsConfig{
 }
 
 // Create data store
-store, err := dq.NewRdbmsDataStore(&config)
+store, err := goquery.NewRdbmsDataStore(&config)
 if err != nil {
     log.Fatal(err)
 }
@@ -153,9 +153,9 @@ type FishingSpot struct {
     Location *string `db:"location"`
 }
 
-var fs dq.TableDataSet = dq.TableDataSet{
+var fs goquery.TableDataSet = goquery.TableDataSet{
     Name: "fishing_spots",
-    Statements: dq.Statements{
+    Statements: goquery.Statements{
         "get-fishing-spots":            "select * from fishing_spots",
         "get-fishing-spot-by-id":       "select * from fishing_spots where id=$1",
         "get-fishing-spot-by-location": "select * from fishing_spots where location=$1",
@@ -278,7 +278,7 @@ func postgresTest() {
 	err = store.Select().
 		DataSet(&fs).
 		StatementKey("get-fishing-spots").
-		ForEachRow(func(row dq.Rows) error {
+		ForEachRow(func(row goquery.Rows) error {
 			err := row.ScanStruct(&dest)
 			if err != nil {
 				return err
@@ -355,7 +355,7 @@ func postgresTest() {
 	//remove the inserted record
 	//uses query execution in the same manner as database/sql
 	//////////////////////////////////
-	err = store.Exec(dq.NoTx, "delete from fishing_spots where id=$1", 100)
+	err = store.Exec(goquery.NoTx, "delete from fishing_spots where id=$1", 100)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -394,7 +394,7 @@ func postgresTest() {
 	//remove the inserted records
 	//uses query execution in the same manner as database/sql
 	//////////////////////////////////
-	err = store.Exec(dq.NoTx, "delete from fishing_spots where id>$1", 100)
+	err = store.Exec(goquery.NoTx, "delete from fishing_spots where id>$1", 100)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -406,7 +406,7 @@ func postgresTest() {
 	//and will automatically commit if there are no errors
 	//////////////////////////////////
 
-	err = store.Transaction(func(tx dq.Tx) {
+	err = store.Transaction(func(tx goquery.Tx) {
 		//use the insert fluent api
 		store.Insert(&fs).Records(&locations[0]).Tx(&tx).PanicOnErr(true).Execute()
 
@@ -444,7 +444,7 @@ func postgresTest() {
 	//////////////////////////////////
 
 	//set the fishing spots sequence to a value of 1000 since we were manually adding ids
-	err = store.Exec(dq.NoTx, "SELECT setval('fishing_spots_id_seq', 1000, False)")
+	err = store.Exec(goquery.NoTx, "SELECT setval('fishing_spots_id_seq', 1000, False)")
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -471,8 +471,8 @@ func safeprint(val *string) string {
 	return *val
 }
 
-func pgconnect() (dq.DataStore, error) {
-	config := dq.RdbmsConfig{
+func pgconnect() (goquery.DataStore, error) {
+	config := goquery.RdbmsConfig{
 		Dbuser:   "myuser",
 		Dbpass:   "mypass",
 		Dbhost:   "localhost",
@@ -481,7 +481,7 @@ func pgconnect() (dq.DataStore, error) {
 		DbDriver: "pgx",
 		DbStore:  "pgx",
 	}
-	return dq.NewRdbmsDataStore(&config)
+	return goquery.NewRdbmsDataStore(&config)
 }
 
 ```
