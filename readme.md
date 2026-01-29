@@ -161,7 +161,7 @@ var fs dq.TableDataSet = dq.TableDataSet{
         "get-fishing-spot-by-location": "select * from fishing_spots where location=$1",
         "insert-with-return":           "insert into fishing_spots (location) values ($1) returning id",
     },
-    TableFields: FishingSpot{}, //TableFields are only necessary for implciti insert statements
+    TableFields: FishingSpot{}, //TableFields are only necessary for implicit insert statements
 }
 ```
 
