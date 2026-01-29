@@ -1,29 +1,139 @@
-# goquery is a small library to simplify commodity database operations.
+# goquery
+
+goquery is a small library to simplify commodity database operations. It provides a fluent API for database interactions with support for multiple database backends through a unified interface.
+
+## Features
+
+- Fluent API for database operations
+- Support for PostgreSQL (via pgx) and other SQL databases (via sqlx)
+- Type-safe data mapping with struct tags
+- Transaction support
+- JSON and CSV output formats
+- Batch operations
+- Connection pooling configuration
+
+## Getting Started
+
+### Installation
+
+```bash
+go get github.com/usace/goquery
+```
 
 For Postgres databases it wraps pgx and for sql interface db connections it wraps sqlx
 
----
-Connecting to a RDBMS:
+### Basic Usage
 
- - populate a rdbms configuration struct with the following info:
- ```go
-   type RdbmsConfig struct {
-	Dbuser      string 
-	Dbpass      string
-	Dbhost      string
-	Dbport      string
-	Dbname      string //db instance or name
-	ExternalLib string //any external libraries required by the underlying db driver.  for example the instance client location for oracle connections
-	DbDriver    string //db driver reference 
-	DbStore     string //goquery store type.  Currently choices are 'pgx' or 'sqlx'
+```go
+// Configure database connection
+config := dq.RdbmsConfig{
+    Dbuser:   "myuser",
+    Dbpass:   "mypass",
+    Dbhost:   "localhost",
+    Dbname:   "postgres",
+    Dbport:   "5432",
+    DbDriver: "pgx",
+    DbStore:  "pgx",
+}
+
+// Create data store
+store, err := dq.NewRdbmsDataStore(&config)
+if err != nil {
+    log.Fatal(err)
 }
 ```
-  - Driver Stores
-    - pgx: uses the pgx driver and is postgres only
-    - sqlx: uses sqlx and all sql compliant db drivers
 
-<br/>
- Create the connection
+## Core Concepts
+
+### DataStore
+
+The `DataStore` interface is the main entry point for database operations:
+
+```go
+type DataStore interface {
+    Select(stmt string, params ...interface{}) *FluentSelect
+    Get(dest interface{}, tx *Tx, stmt string, params ...interface{}) error
+    Select(dest interface{}, tx *Tx, stmt string, params ...interface{}) error
+    Query(tx *Tx, stmt string, params ...interface{}) (Rows, error)
+    Insert(ds DataSet, rec interface{}, tx *Tx) error
+    InsertStmt(ds DataSet) (string, error)
+    Exec(tx *Tx, stmt string, params ...interface{}) error
+    Execr(tx *Tx, stmt string, params ...interface{}) (ExecResult, error)
+    MustExec(tx *Tx, stmt string, params ...interface{})
+    MustExecr(tx *Tx, stmt string, params ...interface{}) ExecResult
+    Transaction(fn func(tx Tx)) error
+    Batch() (Batch, error)
+    SendBatch(batch Batch) BatchResult
+}
+```
+
+# Configuration
+
+### Environment Variables
+
+goquery supports configuration via environment variables:
+
+- `DBUSER` - Database username
+- `DBPASS` - Database password
+- `DBHOST` - Database host
+- `DBPORT` - Database port (default: 5432)
+- `DBNAME` - Database name
+- `DBDRIVER` - Database driver (e.g., "pgx")
+- `DBSTORE` - Store type ("pgx" or "sqlx")
+- `EXTERNAL_LIB` - External libraries for database connections
+- `DBDRIVER_PARAMS` - Additional driver parameters
+- `POOLMAXCONNS` - Maximum pool connections
+- `POOLMINCONNS` - Minimum pool connections
+- `POOLMAXCONNLIFETIME` - Maximum connection lifetime
+- `POOLMAXCONNIDLE` - Maximum connection idle time
+
+### RdbmsConfig Struct
+
+```go
+type RdbmsConfig struct {
+    Dbuser      string
+    Dbpass      string
+    Dbhost      string
+    Dbport      string
+    Dbname      string
+    ExternalLib string
+    OnInit      string
+    DbDriver    string
+    DbStore     string
+
+    PoolMaxConns        int
+    PoolMinConns        int
+    PoolMaxConnLifetime string //duration string
+    PoolMaxConnIdle     string //duration string
+
+    DbDriverSettings string
+}
+```
+
+## Supported Databases
+
+goquery supports multiple database backends:
+
+- PostgreSQL (via pgx)
+- Any SQL-compliant database (via sqlx)
+
+## Database Dialects
+
+The library includes support for different database dialects:
+
+- PostgreSQL (`dialect_pg.go`)
+- SQLite (`dialect_sqlite.go`)
+- Oracle (`dialect_oracle.go`)
+- DuckDB (`dialect_duckdb.go`)
+
+Each dialect defines database-specific SQL syntax and connection methods.
+
+## License
+
+MIT License
+
+---
+ Creating a connection
 
  ```go
  store,err:=NewRdbmsDataStore(&config)
@@ -33,23 +143,30 @@ Connecting to a RDBMS:
 
 ---
 
-- Kitchen sink examples
+### DataSet
+
+DataSets are data structures used to define the structure of your data and organize associated SQL statements:
+
 ```go
 type FishingSpot struct {
-	ID       int32   `db:"id" dbid:"SEQUENCE" idsequence:"fishing_spots_id_seq"`
-	Location *string `db:"location"`
+    ID       int32   `db:"id" dbid:"SEQUENCE" idsequence:"fishing_spots_id_seq"`
+    Location *string `db:"location"`
 }
 
 var fs dq.TableDataSet = dq.TableDataSet{
-	Name: "fishing_spots",
-	Statements: dq.Statements{
-		"get-fishing-spots":            "select * from fishing_spots",
-		"get-fishing-spot-by-id":       "select * from fishing_spots where id=$1",
-		"get-fishing-spot-by-location": "select * from fishing_spots where location=$1",
-		"insert-with-return":           "insert into fishing_spots (location) values ($1) returning id",
-	},
-	TableFields: FishingSpot{},
+    Name: "fishing_spots",
+    Statements: dq.Statements{
+        "get-fishing-spots":            "select * from fishing_spots",
+        "get-fishing-spot-by-id":       "select * from fishing_spots where id=$1",
+        "get-fishing-spot-by-location": "select * from fishing_spots where location=$1",
+        "insert-with-return":           "insert into fishing_spots (location) values ($1) returning id",
+    },
+    TableFields: FishingSpot{}, //TableFields are only necessary for implciti insert statements
 }
+```
+
+- Kitchen sink examples
+```go
 
 func postgresTest() {
 	store, err := pgconnect()
