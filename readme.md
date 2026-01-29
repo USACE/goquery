@@ -221,7 +221,7 @@ func postgresTest() {
 	fmt.Println(dest)
 
 	///////////////////////////////////
-	// Simple select that includes string concatonation via the Appliy function(yes...you read that properly)
+	// Simple select that includes string concatenation via the Apply function(yes...you read that properly)
 	// SQL statement that is send to the DB is logged
 	// results are written to a struct
 	//////////////////////////////////
@@ -311,7 +311,7 @@ func postgresTest() {
 
 	///////////////////////////////////
 	// Fetch data as a json string
-	// Using the FetchJsonMethod will accumunlate JSON bytes into a
+	// Using the FetchJsonMethod will accumulate JSON bytes into a
 	// byte buffer, so it should only be used for small datasets
 	//////////////////////////////////
 	json, err := store.Select("select * from fishing_spots").FetchJSON()
@@ -401,9 +401,9 @@ func postgresTest() {
 
 	///////////////////////////////////
 	//insert multiple items within a transaction
-	//statments must panic on failure inside transaction blocks
+	//statements must panic on failure inside transaction blocks
 	//the transaction function will automatically rollback on error
-	//and will atuomatically commit if there are no errors
+	//and will automatically commit if there are no errors
 	//////////////////////////////////
 
 	err = store.Transaction(func(tx dq.Tx) {
@@ -439,7 +439,7 @@ func postgresTest() {
 	fmt.Println(ids)
 
 	///////////////////////////////////
-	//use the same appoach to perform an insert
+	//use the same approach to perform an insert
 	//but returning new id values
 	//////////////////////////////////
 
