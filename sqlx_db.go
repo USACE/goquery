@@ -74,6 +74,8 @@ func getDialect(driver string) (DbDialect, error) {
 		return pgDialect, nil
 	case "godror":
 		return oracleDialect, nil
+	case "sqlite":
+		return sqliteDialect, nil
 	default:
 		return DbDialect{}, errors.New(fmt.Sprintf("Unsupported DB Driver: %s", driver))
 	}
@@ -154,7 +156,25 @@ func (sdb *SqlxDb) InsertStmt(ds DataSet) (string, error) {
 }
 
 func (sdb *SqlxDb) Insert(ds DataSet, rec interface{}, tx *Tx) error {
-	//pdb.db.Exec(context.Background(),stmt,
+	var err error
+	var stmt string
+	var ok bool
+
+	if stmt, ok = ds.Commands()["insert"]; !ok {
+		stmt, err = ToInsert(ds, sdb.dialect)
+	}
+	if err != nil {
+		return err
+	}
+	params := StructToIArray(rec)
+	if tx == nil {
+		_, err = sdb.db.Exec(stmt, params...)
+		return err
+	} else {
+		sqltx := tx.SqlTx()
+		_, err = sqltx.Exec(stmt, params...)
+		return err
+	}
 	return nil
 }
 
