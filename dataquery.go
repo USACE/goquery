@@ -77,5 +77,5 @@ func (t *TableDataSet) PutCommand(key string, stmt string) {
 	if t.Statements == nil {
 		t.Statements = make(map[string]string)
 	}
-	t.Statements[selectkey] = stmt
+	t.Statements[key] = stmt
 }

@@ -198,7 +198,7 @@ func (pdb *PgxDb) Batch() (Batch, error) {
 func (pdb *PgxDb) SendBatch(batch Batch) BatchResult {
 	pb := batch.(*pgx.Batch)
 	br := pdb.db.SendBatch(context.Background(), pb)
-	br.Close()
+	//br.Close()
 	return br
 }
 

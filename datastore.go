@@ -81,6 +81,7 @@ type DataStore interface {
 
 type Batch interface {
 	Queue(stmt string, params ...interface{})
+	Len() int
 }
 
 type BatchResult interface {

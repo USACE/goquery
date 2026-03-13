@@ -224,6 +224,55 @@ func (sds *RdbmsDataStore) insert(ds DataSet, rrecs reflect.Value, tx *Tx) error
 	return nil
 }
 
+// func (sds *RdbmsDataStore) insertBatch(ds DataSet, rrecs reflect.Value, batchSize int) error {
+//     batch, err := sds.db.Batch()
+//     if err != nil {
+//         return err
+//     }
+//     stmt, err := sds.db.InsertStmt(ds)
+//     if err != nil {
+//         return err
+//     }
+//     batchCount := 0  // Track statements in current batch
+//     for i := 0; i < rrecs.Len(); i++ {
+//         rec := rrecs.Index(i).Interface()
+//         batch.Queue(stmt, StructToIArray(rec)...)
+//         batchCount++
+
+//         // Send batch when we reach batchSize or at the end
+//         if batchCount >= batchSize || i == rrecs.Len()-1 {
+//             func() {
+//                 br := sds.db.SendBatch(batch)
+//                 defer br.Close()
+
+//                 // Check results for each statement in this batch
+//                 for j := 0; j < batchCount; j++ {
+//                     _, err := br.Exec()
+//                     if err != nil {
+//                         err = fmt.Errorf("batch insert failed at record %d: %w", i-batchCount+j+1, err)
+//                         return
+//                     }
+//                 }
+//             }()
+
+//             // Check if error occurred in anonymous function
+//             if err != nil {
+//                 return err
+//             }
+
+//             // Start new batch if not done
+//             if i < rrecs.Len()-1 {
+//                 batch, err = sds.db.Batch()
+//                 if err != nil {
+//                     return err
+//                 }
+//                 batchCount = 0
+//             }
+//         }
+//     }
+//     return nil
+// }
+
 func (sds *RdbmsDataStore) insertBatch(ds DataSet, rrecs reflect.Value, batchSize int) error {
 	batch, err := sds.db.Batch()
 	if err != nil {
@@ -235,18 +284,32 @@ func (sds *RdbmsDataStore) insertBatch(ds DataSet, rrecs reflect.Value, batchSiz
 		return err
 	}
 
-	for i := 0; i < rrecs.Len(); i++ {
+	recordsLength := rrecs.Len()
+	for i := 0; i < recordsLength; i++ {
 		rec := rrecs.Index(i).Interface()
 		batch.Queue(stmt, StructToIArray(rec)...)
-		if i >= batchSize {
-			sds.db.SendBatch(batch)
+		if (i+1)%batchSize == 0 || i == recordsLength-1 {
+			err = func() error {
+				batchResults := sds.db.SendBatch(batch)
+				defer batchResults.Close()
+				//check results for an error
+				for j := 0; j < batch.Len(); j++ {
+					_, err := batchResults.Exec()
+					if err != nil {
+						return err
+					}
+				}
+				return nil
+			}()
+			if err != nil {
+				return err
+			}
 			batch, err = sds.db.Batch()
 			if err != nil {
 				return err
 			}
 		}
 	}
-	sds.db.SendBatch(batch)
 	return nil
 }
 

@@ -99,6 +99,17 @@ func (sdb *SqlxDb) querier(tx *Tx) sqlx.Queryer {
 	return sdb.db
 }
 
+type sqlxexecr interface {
+	Exec(query string, args ...interface{}) (sql.Result, error)
+}
+
+func (sdb *SqlxDb) execr(tx *Tx) sqlxexecr {
+	if tx != nil {
+		return tx.SqlTx()
+	}
+	return sdb.db
+}
+
 func (sdb *SqlxDb) Connection() interface{} {
 	return sdb.db
 }
@@ -118,28 +129,41 @@ func (sdb *SqlxDb) Get(dest interface{}, tx *Tx, stmt string, params ...interfac
 }
 
 func (sdb *SqlxDb) Query(tx *Tx, stmt string, params ...interface{}) (Rows, error) {
-	rows, err := sdb.db.Query(stmt, params...)
+	var rows *sql.Rows
+	var err error
+	if tx != nil {
+		rows, err = tx.SqlTx().Query(stmt, params...)
+	} else {
+		rows, err = sdb.db.Query(stmt, params...)
+	}
 	return &SqlRows{rows, nil}, err
 }
 
 func (sdb *SqlxDb) Exec(tx *Tx, stmt string, params ...interface{}) error {
-	_, err := sdb.db.Exec(stmt, params...)
+	_, err := sdb.execr(tx).Exec(stmt, params...)
 	return err
 }
 
 func (sdb *SqlxDb) Execr(tx *Tx, stmt string, params ...interface{}) (ExecResult, error) {
-	res, err := sdb.db.Exec(stmt, params...)
+	res, err := sdb.execr(tx).Exec(stmt, params...)
 	return SqlxExecResult{res}, err
 }
 
 func (sdb *SqlxDb) MustExec(tx *Tx, stmt string, params ...interface{}) {
-	res := sdb.db.MustExec(stmt, params...)
-	//@TODO what to do with result?
-	fmt.Println(res)
+	if tx != nil {
+		tx.SqlXTx().MustExec(stmt, params...)
+	} else {
+		sdb.db.MustExec(stmt, params...)
+	}
 }
 
 func (sdb *SqlxDb) MustExecr(tx *Tx, stmt string, params ...interface{}) ExecResult {
-	res := sdb.db.MustExec(stmt, params...)
+	var res sql.Result
+	if tx != nil {
+		res = tx.SqlXTx().MustExec(stmt, params...)
+	} else {
+		res = sdb.db.MustExec(stmt, params...)
+	}
 	return SqlxExecResult{res}
 }
 
@@ -175,7 +199,6 @@ func (sdb *SqlxDb) Insert(ds DataSet, rec interface{}, tx *Tx) error {
 		_, err = sqltx.Exec(stmt, params...)
 		return err
 	}
-	return nil
 }
 
 func (sdb *SqlxDb) Transaction() (Tx, error) {

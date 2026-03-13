@@ -115,7 +115,7 @@ func RowsToJSON(builder io.Writer, rows Rows, toCamelCase bool, isArray bool, da
 	for i, tp := range tt {
 		//st := tp.ScanType()
 		if tp == nil {
-			return fmt.Errorf("Scantype is null for column: %v", err)
+			return fmt.Errorf("Scantype is null for column: %s", columns[i])
 		}
 		switch tp {
 		case strType, nullStringType:
@@ -158,6 +158,7 @@ func RowsToJSON(builder io.Writer, rows Rows, toCamelCase bool, isArray bool, da
 		if err != nil {
 			return fmt.Errorf("failed to scan values: %v", err)
 		}
+		fieldcount := 0
 		for i, v := range values {
 			jsonb, err := json.Marshal(v)
 			if err != nil {
@@ -167,7 +168,7 @@ func RowsToJSON(builder io.Writer, rows Rows, toCamelCase bool, isArray bool, da
 			if omitNull && jsons == "null" {
 				continue
 			}
-			if i > 0 {
+			if fieldcount > 0 {
 				builder.Write(comma)
 			}
 			fieldName := columns[i]
@@ -175,6 +176,7 @@ func RowsToJSON(builder io.Writer, rows Rows, toCamelCase bool, isArray bool, da
 				fieldName = strcase.LowerCamelCase(fieldName)
 			}
 			builder.Write([]byte(fmt.Sprintf(`"%s":%s`, fieldName, jsons)))
+			fieldcount++
 		}
 		builder.Write(closeobj)
 		count++

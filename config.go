@@ -11,6 +11,12 @@ import (
 // the format consists of decimal numbers, each with optional fraction and a unit suffix,
 // such as "300ms", "-1.5h" or "2h45m".
 // Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
+
+const (
+	dbPoolMaxConnsDefault int = 10
+	dbPoolMinConnsDefault int = 2
+)
+
 type RdbmsConfig struct {
 	Dbuser      string
 	Dbpass      string
@@ -49,16 +55,20 @@ func RdbmsConfigFromEnv() *RdbmsConfig {
 	maxConns := os.Getenv("POOLMAXCONNS")
 	mc, err := strconv.Atoi(maxConns)
 	if err != nil {
-		log.Printf("Error parsing POOLMAXCONNS value of \"%s\":  Will fall back to default POOLMAXCONNS value.\n", maxConns)
+		log.Printf("Error parsing POOLMAXCONNS value of \"%s\":  Will fall back to default POOLMAXCONNS value of %d\n", maxConns, dbPoolMaxConnsDefault)
+		dbConfig.PoolMaxConns = dbPoolMaxConnsDefault
+	} else {
+		dbConfig.PoolMaxConns = mc
 	}
-	dbConfig.PoolMaxConns = mc
 
 	minConns := os.Getenv("POOLMINCONNS")
 	mc, err = strconv.Atoi(minConns)
 	if err != nil {
-		log.Printf("Error parsing POOLMINCONNS value of \"%s\":  Will fall back to default POOLMINCONNS value.\n", minConns)
+		log.Printf("Error parsing POOLMINCONNS value of \"%s\":  Will fall back to default POOLMINCONNS value of %d\n", minConns, dbPoolMinConnsDefault)
+		dbConfig.PoolMinConns = dbPoolMinConnsDefault
+	} else {
+		dbConfig.PoolMinConns = mc
 	}
-	dbConfig.PoolMinConns = mc
 
 	dbConfig.PoolMaxConnLifetime = os.Getenv("POOLMAXCONNLIFETIME")
 	dbConfig.PoolMaxConnIdle = os.Getenv("POOLMAXCONNIDLE")
