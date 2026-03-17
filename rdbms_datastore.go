@@ -302,7 +302,7 @@ func (sds *RdbmsDataStore) insertBatch(ds DataSet, rrecs reflect.Value, batchSiz
 				return nil
 			}()
 			if err != nil {
-				return err
+				return fmt.Errorf("batch operation error on record %d: %s", i, err)
 			}
 			batch, err = sds.db.Batch()
 			if err != nil {
