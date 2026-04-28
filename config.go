@@ -1,6 +1,7 @@
 package goquery
 
 import (
+	"database/sql/driver"
 	"log"
 	"os"
 	"strconv"
@@ -24,9 +25,10 @@ type RdbmsConfig struct {
 	Dbport      string
 	Dbname      string
 	ExternalLib string
-	OnInit      string
+	OnInit      string //URL level initialization only supported by the Oracle GODROR driver
 	DbDriver    string
 	DbStore     string
+	OnConnect   func(ds DataStore) error //optional function for running commands when a connection is opened
 
 	PoolMaxConns        int
 	PoolMinConns        int
@@ -34,6 +36,10 @@ type RdbmsConfig struct {
 	PoolMaxConnIdle     string //duration string
 
 	DbDriverSettings string
+
+	//if a driver.connector is populated, it will be used to create all connections
+	//all other parameters will be ignored
+	Connector driver.Connector
 }
 
 func RdbmsConfigFromEnv() *RdbmsConfig {

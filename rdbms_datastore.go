@@ -12,22 +12,32 @@ import (
 //implements the datastore interface
 
 func NewRdbmsDataStore(config *RdbmsConfig) (DataStore, error) {
+	var db RdbmsDb
 	switch config.DbStore {
 	case "pgx":
-		db, err := NewPgxConnection(config)
+		pdb, err := NewPgxConnection(config)
 		if err != nil {
 			return nil, fmt.Errorf("unable to connect to pgx datastore: %s", err)
 		}
-		return &RdbmsDataStore{&db}, nil
+		db = &pdb
 	case "sqlx":
-		db, err := NewSqlxConnection(config)
+		sdb, err := NewSqlxConnection(config)
 		if err != nil {
 			return nil, fmt.Errorf("unable to connect to sqlx datastore: %s", err)
 		}
-		return &RdbmsDataStore{&db}, nil
+		db = &sdb
 	default:
 		return nil, fmt.Errorf("unsupported store type: %s", config.DbStore)
 	}
+
+	store := &RdbmsDataStore{db}
+	if config.OnConnect != nil {
+		err := config.OnConnect(store)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return store, nil
 }
 
 type RdbmsDataStore struct {

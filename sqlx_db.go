@@ -59,6 +59,10 @@ func (s *SqlRows) ScanStruct(dest interface{}) error {
 	return s.rowScanner.Scan(dest)
 }
 
+func (s *SqlRows) ToMap() (map[string]any, error) {
+	return RowToMap(s)
+}
+
 func (s *SqlRows) Close() error {
 	return s.rows.Close()
 }
@@ -70,14 +74,16 @@ type SqlxDb struct {
 
 func getDialect(driver string) (DbDialect, error) {
 	switch driver {
+	case "duckdb":
+		return duckdbDialect, nil
 	case "pgx":
 		return pgDialect, nil
 	case "godror":
 		return oracleDialect, nil
-	case "sqlite":
+	case "sqlite", "sqlite3":
 		return sqliteDialect, nil
 	default:
-		return DbDialect{}, errors.New(fmt.Sprintf("Unsupported DB Driver: %s", driver))
+		return DbDialect{}, fmt.Errorf("unsupported db driver: %s", driver)
 	}
 }
 
@@ -87,9 +93,14 @@ func NewSqlxConnection(config *RdbmsConfig) (SqlxDb, error) {
 		return SqlxDb{}, err
 	}
 	dburl := dialect.Url(config)
-	con, err := sqlx.Connect(config.DbDriver, dburl)
-
-	return SqlxDb{con, dialect}, err
+	if config.Connector != nil {
+		sqlcon := sql.OpenDB(config.Connector)
+		con := sqlx.NewDb(sqlcon, config.DbDriver)
+		return SqlxDb{con, dialect}, nil
+	} else {
+		con, err := sqlx.Connect(config.DbDriver, dburl)
+		return SqlxDb{con, dialect}, err
+	}
 }
 
 func (sdb *SqlxDb) querier(tx *Tx) sqlx.Queryer {

@@ -19,7 +19,59 @@ type Rows interface {
 	Next() bool
 	Scan(dest ...interface{}) error
 	ScanStruct(dest interface{}) error
+	ToMap() (map[string]any, error)
 	Close() error
+}
+
+// converts the current Rows position to a map
+func RowToMap(r Rows) (map[string]any, error) {
+	cols, err := r.Columns()
+	if err != nil {
+		return nil, err
+	}
+
+	colTypes, err := r.ColumnTypes()
+	if err != nil {
+		return nil, err
+	}
+
+	vals := make([]any, len(cols))
+
+	for i := range vals {
+		pval := reflect.New(colTypes[i])
+		ival := pval.Interface() //call Elem to dereference the pointer created by reflect.New
+		vals[i] = ival
+	}
+
+	err = r.Scan(vals...)
+	valmap := make(map[string]any)
+	//this is pretty gross, but it is significantly faster than reflection which is the fallback
+	for i, col := range cols {
+		val := vals[i]
+		var concreteVal any
+
+		switch v := val.(type) {
+		case *string:
+			concreteVal = *v
+		case *int64:
+			concreteVal = *v
+		case *int32:
+			concreteVal = *v
+		case *float64:
+			concreteVal = *v
+		case *float32:
+			concreteVal = *v
+		case *bool:
+			concreteVal = *v
+		default:
+			// Fallback to reflection ONLY for unknown types
+			concreteVal = reflect.Indirect(reflect.ValueOf(val)).Interface()
+		}
+
+		valmap[col] = concreteVal
+	}
+
+	return valmap, nil
 }
 
 type DataSet interface {

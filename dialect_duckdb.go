@@ -7,4 +7,7 @@ var duckdbDialect = DbDialect{
 	Bind: func(field string, i int) string {
 		return fmt.Sprintf("$%d", i+1)
 	},
+	Url: func(config *RdbmsConfig) string {
+		return config.Dbname
+	},
 }

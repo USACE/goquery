@@ -4,6 +4,13 @@
 **License:** MIT  
 **Go Version:** 1.18+
 
+
+//new stuff
+ - OnConnect function
+ - DuckDb Support
+ - support for native sqlite (sqlite) or cgo sqlite (sqlite3)
+ - support for using driver Connectors with sqlx (important for duckdb)
+ 
 ---
 
 ## Table of Contents
@@ -252,7 +259,7 @@ config := goquery.RdbmsConfig{
 ```go
 config := goquery.RdbmsConfig{
     Dbname:           "/path/to/database.db",
-    DbDriver:         "sqlite",
+    DbDriver:         "sqlite3",
     DbStore:          "sqlx",
     DbDriverSettings: "_journal_mode=WAL&_timeout=5000",
 }

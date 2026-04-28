@@ -86,6 +86,10 @@ func (p *PgxRows) ScanStruct(dest interface{}) error {
 	return p.rowScanner.Scan(dest)
 }
 
+func (p *PgxRows) ToMap() (map[string]any, error) {
+	return RowToMap(p)
+}
+
 func (p *PgxRows) Close() error {
 	p.rows.Close()
 	return nil
