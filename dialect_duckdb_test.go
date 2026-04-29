@@ -23,14 +23,16 @@ func TestDuckDb_SpatialQuery(t *testing.T) {
 	}
 
 	resource := "testdata/example.gpkg"
+	layer := "geometry1"
 
-	query := fmt.Sprintf("SELECT * FROM ST_Read('%s',layer='%s', keep_wkb=true)", resource, "geometry1")
-	err = store2.Select(query).ForEachRow(func(row Rows) error {
-		valsMap, err := row.ToMap()
-		if err != nil {
-			t.Error(err)
-		}
-		fmt.Println(valsMap["text"])
-		return nil
-	}).Fetch()
+	query := fmt.Sprintf("SELECT * FROM ST_Read('%s',layer='%s', keep_wkb=true)", resource, layer)
+	err = store2.Select(query).
+		ForEachRow(func(row Rows) error {
+			valsMap, err := row.ToMap()
+			if err != nil {
+				t.Error(err)
+			}
+			fmt.Println(valsMap["text"])
+			return nil
+		}).Fetch()
 }
