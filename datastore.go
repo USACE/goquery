@@ -92,3 +92,7 @@ type BatchResult interface {
 type ExecResult interface {
 	RowsAffected() int64
 }
+
+type DialectRegistry map[string]DbDialect
+
+var DbRegistry = make(DialectRegistry)

@@ -73,18 +73,10 @@ type SqlxDb struct {
 }
 
 func getDialect(driver string) (DbDialect, error) {
-	switch driver {
-	case "duckdb":
-		return duckdbDialect, nil
-	case "pgx":
-		return pgDialect, nil
-	case "godror":
-		return oracleDialect, nil
-	case "sqlite", "sqlite3":
-		return sqliteDialect, nil
-	default:
-		return DbDialect{}, fmt.Errorf("unsupported db driver: %s", driver)
+	if dialect, ok := DbRegistry[driver]; ok {
+		return dialect, nil
 	}
+	return DbDialect{}, fmt.Errorf("uninitialized or unsupported driver.  make sure you imported the driver: (e.g., _ \"github.com/user/goquery/adapter/postgres\") ")
 }
 
 func NewSqlxConnection(config *RdbmsConfig) (SqlxDb, error) {

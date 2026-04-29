@@ -14,6 +14,10 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
+const (
+	pgDialectRegistryName string = "pgx"
+)
+
 type PgxExecResult struct {
 	res pgconn.CommandTag
 }
@@ -135,6 +139,10 @@ func NewPgxConnection(config *RdbmsConfig) (PgxDb, error) {
 	}
 	dburl = fmt.Sprintf("%s %s", dburl, dburlsuffix)
 	con, err := pgxpool.Connect(context.Background(), dburl)
+	pgDialect, ok := DbRegistry[pgDialectRegistryName]
+	if !ok {
+		return PgxDb{}, fmt.Errorf("uninitialized or unsupported driver.  make sure you imported the driver: (e.g., _ \"github.com/user/goquery/adapter/postgres\") ")
+	}
 	return PgxDb{con, pgDialect}, err
 }
 
