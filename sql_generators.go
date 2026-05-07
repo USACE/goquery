@@ -81,6 +81,9 @@ func ToInsert(ds DataSet, dialect DbDialect) (string, error) {
 	var fieldBuilder strings.Builder
 	var bindBuilder strings.Builder
 	typ := reflect.TypeOf(ds.Fields())
+	if typ == nil {
+		return "", fmt.Errorf("The data set has no fields.  make sure the Fields or TableFields are assigned for %s", ds.Entity())
+	}
 	fieldNum := typ.NumField()
 	fieldcount := 0
 	paramcount := 0

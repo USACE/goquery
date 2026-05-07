@@ -1,4 +1,4 @@
-module github.com/usace/goquery/v3/adapters/sqlite
+module github.com/usace/goquery/adapters/sqlite/v3
 
 go 1.24.0
 

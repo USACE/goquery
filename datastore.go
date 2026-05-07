@@ -44,10 +44,13 @@ type QueryOutput struct {
 }
 
 type InsertInput struct {
-	Dataset    DataSet
-	Records    interface{}
-	Batch      bool
-	BatchSize  int
+	Dataset   DataSet
+	Records   interface{}
+	Batch     bool
+	BatchSize int
+
+	//when included the batching functions will not create new batch sets
+	BatchQueue Batch
 	PanicOnErr bool
 }
 
@@ -77,11 +80,15 @@ type DataStore interface {
 	MustExec(tx *Tx, stmt string, params ...interface{})
 	MustExecr(tx *Tx, stmt string, params ...interface{}) ExecResult
 	//RecordsetIterator(s Select, handler RecordHandler)
+
+	Batch() (Batch, error)
+	FlushBatch(batchQueue Batch) error
 }
 
 type Batch interface {
 	Queue(stmt string, params ...interface{})
 	Len() int
+	//New()
 }
 
 type BatchResult interface {

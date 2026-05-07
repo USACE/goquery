@@ -1,4 +1,4 @@
-module github.com/usace/goquery/v3/adapters/duckdb
+module github.com/usace/goquery/adapters/duckdb/v3
 
 go 1.24.0
 

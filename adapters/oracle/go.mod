@@ -1,4 +1,4 @@
-module github.com/usace/goquery/v3/adapters/oracle
+module github.com/usace/goquery/adapters/oracle/v3
 
 go 1.24.0
 
