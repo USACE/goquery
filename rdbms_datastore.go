@@ -377,3 +377,11 @@ func (sds *RdbmsDataStore) Insert(ds DataSet) *FluentInsert {
 	}
 	return &fi
 }
+
+func (sds *RdbmsDataStore) Update(ds DataSet) *FluentUpdate {
+	fi := FluentUpdate{
+		ds:    ds,
+		store: sds,
+	}
+	return &fi
+}

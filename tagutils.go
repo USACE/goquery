@@ -11,7 +11,7 @@ func TagsAndVals(tag string, data interface{}) ([]string, []interface{}) {
 	fieldNum := val.NumField()
 	tags := make([]string, fieldNum)
 	ia := make([]interface{}, fieldNum)
-	//@TODO add recustion for type encapsulation
+	//@TODO add recursion for type encapsulation
 	for i := 0; i < fieldNum; i++ {
 		if tagval, ok := typ.Field(i).Tag.Lookup(tag); ok {
 			tags[i] = tagval
