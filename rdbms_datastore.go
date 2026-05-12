@@ -385,3 +385,7 @@ func (sds *RdbmsDataStore) Update(ds DataSet) *FluentUpdate {
 	}
 	return &fi
 }
+
+func (sds *RdbmsDataStore) Close() {
+	sds.db.Close()
+}

@@ -246,3 +246,7 @@ func (pdb *PgxDb) Transaction() (Tx, error) {
 	tx, err := pdb.db.Begin(context.Background())
 	return Tx{tx}, err
 }
+
+func (pdb *PgxDb) Close() {
+	pdb.db.Close()
+}

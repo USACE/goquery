@@ -83,6 +83,8 @@ type DataStore interface {
 
 	Batch() (Batch, error)
 	FlushBatch(batchQueue Batch) error
+
+	Close()
 }
 
 type Batch interface {

@@ -208,3 +208,7 @@ func (sdb *SqlxDb) Transaction() (Tx, error) {
 	tx, err := sdb.db.Beginx()
 	return Tx{tx}, err
 }
+
+func (sdb *SqlxDb) Close() {
+	sdb.db.Close()
+}

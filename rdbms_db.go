@@ -14,4 +14,5 @@ type RdbmsDb interface {
 	MustExecr(tx *Tx, stmt string, params ...interface{}) ExecResult
 	Batch() (Batch, error)
 	SendBatch(batch Batch) BatchResult
+	Close()
 }
