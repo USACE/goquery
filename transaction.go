@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -16,6 +16,12 @@ var NoTx *Tx = nil
 type Tx struct {
 	tx interface{}
 }
+
+//@TODO change signatures to this....
+// func (t Tx) PgxTx() (*pgxpool.Tx, bool) {
+// 	ptx, ok := t.tx.(*pgxpool.Tx)
+// 	return ptx, ok
+// }
 
 func (t Tx) PgxTx() *pgxpool.Tx {
 	return t.tx.(*pgxpool.Tx)

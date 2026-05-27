@@ -45,7 +45,6 @@ func (i *FluentInsert) PanicOnErr(panicOnErr bool) *FluentInsert {
 }
 
 func (i *FluentInsert) Execute() error {
-	//return i.store.InsertRecs(i.ds, i.records, i.batch, i.batchSize, i.tx)
 	ii := InsertInput{
 		Dataset:    i.ds,
 		Records:    i.records,
@@ -54,13 +53,5 @@ func (i *FluentInsert) Execute() error {
 		BatchQueue: i.batchQueue,
 		PanicOnErr: i.panicOnErr,
 	}
-	// if i.batch {
-	// 	batchQueue, err := i.store.Batch()
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	ii.BatchQueue = batchQueue
-	// }
-
 	return i.store.InsertRecs(i.tx, ii)
 }

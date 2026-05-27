@@ -3,7 +3,8 @@ package goquery
 import (
 	"io"
 
-	"github.com/jackc/pgconn"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type RecordHandler func(interface{}) error
@@ -88,14 +89,16 @@ type DataStore interface {
 }
 
 type Batch interface {
-	Queue(stmt string, params ...interface{})
+	Queue(stmt string, params ...any) *pgx.QueuedQuery
 	Len() int
 	//New()
 }
 
 type BatchResult interface {
 	Exec() (pgconn.CommandTag, error)
+	Query() (pgx.Rows, error)
 	Close() error
+	QueryRow() pgx.Row
 }
 
 type ExecResult interface {

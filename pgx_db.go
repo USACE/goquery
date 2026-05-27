@@ -7,11 +7,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/georgysavva/scany/pgxscan"
-	"github.com/jackc/pgconn"
-	"github.com/jackc/pgtype"
-	"github.com/jackc/pgx/v4"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/georgysavva/scany/v2/pgxscan"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 const (
@@ -138,7 +139,7 @@ func NewPgxConnection(config *RdbmsConfig) (PgxDb, error) {
 		dburlsuffix = fmt.Sprintf("%s %s", dburlsuffix, "sslmode=require")
 	}
 	dburl = fmt.Sprintf("%s %s", dburl, dburlsuffix)
-	con, err := pgxpool.Connect(context.Background(), dburl)
+	con, err := pgxpool.New(context.Background(), dburl)
 	pgDialect, ok := DbRegistry[pgDialectRegistryName]
 	if !ok {
 		return PgxDb{}, fmt.Errorf("uninitialized or unsupported driver.  make sure you imported the driver: (e.g., _ \"github.com/user/goquery/adapter/postgres\") ")

@@ -7,7 +7,7 @@ import (
 	"log"
 	"reflect"
 
-	"github.com/georgysavva/scany/sqlscan"
+	"github.com/georgysavva/scany/v2/sqlscan"
 	"github.com/jmoiron/sqlx"
 )
 
