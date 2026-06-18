@@ -76,6 +76,10 @@ func (p *PgxRows) ColumnTypes() ([]reflect.Type, error) {
 	return t, nil
 }
 
+func (p *PgxRows) Err() error {
+	return p.rows.Err()
+}
+
 func (p *PgxRows) Next() bool {
 	return p.rows.Next()
 }

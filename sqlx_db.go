@@ -44,6 +44,10 @@ func (s *SqlRows) ColumnTypes() ([]reflect.Type, error) {
 	return t, nil
 }
 
+func (s *SqlRows) Err() error {
+	return s.rows.Err()
+}
+
 func (s *SqlRows) Next() bool {
 	return s.rows.Next()
 }

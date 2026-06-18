@@ -16,6 +16,7 @@ type RowFunction func(r Rows) error
 type Rows interface {
 	Columns() ([]string, error)
 	ColumnTypes() ([]reflect.Type, error)
+	Err() error
 	Next() bool
 	Scan(dest ...interface{}) error
 	ScanStruct(dest interface{}) error
