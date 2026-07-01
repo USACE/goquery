@@ -14,6 +14,7 @@ import (
 type SqlRows struct {
 	rows       *sql.Rows
 	rowScanner *sqlscan.RowScanner
+	buf        *RowBuffers //optional buffer for effficient high volume row to map scanning operations
 }
 
 type SqlxExecResult struct {
@@ -65,6 +66,16 @@ func (s *SqlRows) ScanStruct(dest interface{}) error {
 
 func (s *SqlRows) ToMap() (map[string]any, error) {
 	return RowToMap(s)
+}
+
+func (p *SqlRows) ScanIntoMap(cols []string, targetMap map[string]any) error {
+	if p.buf == nil {
+		p.buf = &RowBuffers{
+			Vals:     make([]any, len(cols)),
+			ScanDest: make([]any, len(cols)),
+		}
+	}
+	return RowToMapBuf(p, cols, targetMap, p.buf)
 }
 
 func (s *SqlRows) Close() error {
@@ -143,7 +154,7 @@ func (sdb *SqlxDb) Query(tx *Tx, stmt string, params ...interface{}) (Rows, erro
 	} else {
 		rows, err = sdb.db.Query(stmt, params...)
 	}
-	return &SqlRows{rows, nil}, err
+	return &SqlRows{rows, nil, nil}, err
 }
 
 func (sdb *SqlxDb) Exec(tx *Tx, stmt string, params ...interface{}) error {

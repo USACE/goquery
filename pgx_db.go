@@ -35,6 +35,7 @@ type PgxExecr interface {
 type PgxRows struct {
 	rows       pgx.Rows
 	rowScanner *pgxscan.RowScanner
+	buf        *RowBuffers //optional buffer for effficient high volume row to map scanning operations
 }
 
 func (p *PgxRows) Columns() ([]string, error) {
@@ -97,6 +98,16 @@ func (p *PgxRows) ScanStruct(dest interface{}) error {
 
 func (p *PgxRows) ToMap() (map[string]any, error) {
 	return RowToMap(p)
+}
+
+func (p *PgxRows) ScanIntoMap(cols []string, targetMap map[string]any) error {
+	if p.buf == nil {
+		p.buf = &RowBuffers{
+			Vals:     make([]any, len(cols)),
+			ScanDest: make([]any, len(cols)),
+		}
+	}
+	return RowToMapBuf(p, cols, targetMap, p.buf)
 }
 
 func (p *PgxRows) Close() error {
@@ -179,7 +190,7 @@ func (pdb *PgxDb) Get(dest interface{}, tx *Tx, stmt string, params ...interface
 
 func (pdb *PgxDb) Query(tx *Tx, stmt string, params ...interface{}) (Rows, error) {
 	rows, err := pdb.querier(tx).Query(context.Background(), stmt, params...)
-	return &PgxRows{rows, nil}, err
+	return &PgxRows{rows, nil, nil}, err
 }
 
 // @DEPRICATED
