@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"time"
 
 	"github.com/georgysavva/scany/v2/sqlscan"
 	"github.com/jmoiron/sqlx"
@@ -100,14 +101,45 @@ func NewSqlxConnection(config *RdbmsConfig) (SqlxDb, error) {
 		return SqlxDb{}, err
 	}
 	dburl := dialect.Url(config)
+	var conn *sqlx.DB
 	if config.Connector != nil {
 		sqlcon := sql.OpenDB(config.Connector)
-		con := sqlx.NewDb(sqlcon, config.DbDriver)
-		return SqlxDb{con, dialect}, nil
+		conn = sqlx.NewDb(sqlcon, config.DbDriver)
 	} else {
-		con, err := sqlx.Connect(config.DbDriver, dburl)
-		return SqlxDb{con, dialect}, err
+		conn, err = sqlx.Connect(config.DbDriver, dburl)
+		if err != nil {
+			return SqlxDb{}, err
+		}
 	}
+
+	if config.PoolMaxConns > 0 {
+		conn.SetMaxOpenConns(config.PoolMaxConns)
+	}
+
+	if config.PoolMinConns > 0 {
+		conn.SetMaxIdleConns(config.PoolMinConns)
+	}
+
+	if config.PoolMaxConnLifetime != "" {
+		duration, err := time.ParseDuration(config.PoolMaxConnLifetime)
+		if err != nil {
+			log.Printf("failed to parse MaxConnLifetime duration %s.  Using default maximum connection lifetime", config.PoolMaxConnLifetime)
+		} else {
+			conn.SetConnMaxLifetime(duration)
+		}
+	}
+
+	if config.PoolMaxConnIdle != "" {
+		duration, err := time.ParseDuration(config.PoolMaxConnIdle)
+		if err != nil {
+			log.Printf("failed to parse MaxConnIdle duration %s.  Using default maximum connection idle", config.PoolMaxConnIdle)
+		} else {
+			conn.SetConnMaxLifetime(duration)
+		}
+	}
+
+	return SqlxDb{conn, dialect}, err
+
 }
 
 func (sdb *SqlxDb) querier(tx *Tx) sqlx.Queryer {
