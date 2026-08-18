@@ -3,6 +3,7 @@ package goquery
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"io"
 )
 
@@ -14,10 +15,16 @@ type FluentSelect struct {
 	qi    QueryInput
 	qo    QueryOutput
 	dest  interface{}
+	ctx   context.Context
 }
 
 func (s *FluentSelect) DataSet(ds DataSet) *FluentSelect {
 	s.qi.DataSet = ds
+	return s
+}
+
+func (s *FluentSelect) Context(ctx context.Context) *FluentSelect {
+	s.ctx = ctx
 	return s
 }
 
@@ -100,18 +107,18 @@ func (s *FluentSelect) ForEachRow(rf RowFunction) *FluentSelect {
 }
 
 func (s *FluentSelect) Fetch() error {
-	error := s.store.Fetch(s.tx, s.qi, s.qo, s.dest)
+	error := s.store.Fetch(s.ctx, s.tx, s.qi, s.qo, s.dest)
 	return error
 }
 
 func (s *FluentSelect) FetchRows() (Rows, error) {
-	return s.store.FetchRows(s.tx, s.qi)
+	return s.store.FetchRows(s.ctx, s.tx, s.qi)
 }
 
 // @deprecated: This method will be removed in the next version.  Use Fetch()
 func (s *FluentSelect) FetchI() (interface{}, error) {
 	dest := s.qi.DataSet.FieldSlice()
-	error := s.store.Fetch(s.tx, s.qi, s.qo, dest)
+	error := s.store.Fetch(s.ctx, s.tx, s.qi, s.qo, dest)
 	return dest, error
 }
 
@@ -119,12 +126,12 @@ func (s *FluentSelect) FetchI() (interface{}, error) {
 func (s *FluentSelect) FetchJSON() ([]byte, error) {
 	var b bytes.Buffer
 	writer := bufio.NewWriter(&b)
-	err := s.store.GetJSON(writer, s.qi, s.qo.Options)
+	err := s.store.GetJSON(s.ctx, writer, s.qi, s.qo.Options)
 	writer.Flush()
 	return b.Bytes(), err
 }
 
 // @deprecated: This method will be removed in the next version.  Use Fetch()
 func (s *FluentSelect) FetchCSV() (string, error) {
-	return s.store.GetCSV(s.qi, s.qo.Options)
+	return s.store.GetCSV(s.ctx, s.qi, s.qo.Options)
 }

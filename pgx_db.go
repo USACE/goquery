@@ -180,16 +180,47 @@ func (pdb *PgxDb) execr(tx *Tx) PgxExecr {
 	return pdb.db
 }
 
-func (pdb *PgxDb) Select(dest interface{}, tx *Tx, stmt string, params ...interface{}) error {
+func (pdb *PgxDb) Select(dest any, tx *Tx, stmt string, params ...any) error {
 	return pgxscan.Select(context.Background(), pdb.querier(tx), dest, stmt, params...)
 }
 
-func (pdb *PgxDb) Get(dest interface{}, tx *Tx, stmt string, params ...interface{}) error {
+func (pdb *PgxDb) SelectWithOptions(dest any, opts RdbmsQueryOptions) error {
+	var ctx context.Context
+	if opts.Ctx != nil {
+		ctx = opts.Ctx
+	} else {
+		ctx = context.Background()
+	}
+	return pgxscan.Select(ctx, pdb.querier(opts.Tx), dest, opts.Statement, opts.Params...)
+}
+
+func (pdb *PgxDb) Get(dest any, tx *Tx, stmt string, params ...any) error {
 	return pgxscan.Get(context.Background(), pdb.querier(tx), dest, stmt, params...)
 }
 
-func (pdb *PgxDb) Query(tx *Tx, stmt string, params ...interface{}) (Rows, error) {
+func (pdb *PgxDb) GetWithOptions(dest any, opts RdbmsQueryOptions) error {
+	var ctx context.Context
+	if opts.Ctx != nil {
+		ctx = opts.Ctx
+	} else {
+		ctx = context.Background()
+	}
+	return pgxscan.Get(ctx, pdb.querier(opts.Tx), dest, opts.Statement, opts.Params...)
+}
+
+func (pdb *PgxDb) Query(tx *Tx, stmt string, params ...any) (Rows, error) {
 	rows, err := pdb.querier(tx).Query(context.Background(), stmt, params...)
+	return &PgxRows{rows, nil, nil}, err
+}
+
+func (pdb *PgxDb) QueryWithOptions(opts RdbmsQueryOptions) (Rows, error) {
+	var ctx context.Context
+	if opts.Ctx != nil {
+		ctx = opts.Ctx
+	} else {
+		ctx = context.Background()
+	}
+	rows, err := pdb.querier(opts.Tx).Query(ctx, opts.Statement, opts.Params...)
 	return &PgxRows{rows, nil, nil}, err
 }
 

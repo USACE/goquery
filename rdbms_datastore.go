@@ -1,6 +1,7 @@
 package goquery
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -96,7 +97,7 @@ func (sds *RdbmsDataStore) Transaction(fn TransactionFunction) (err error) {
 	return err
 }
 
-func (sds *RdbmsDataStore) Fetch(tx *Tx, qi QueryInput, qo QueryOutput, dest interface{}) error {
+func (sds *RdbmsDataStore) Fetch(ctx context.Context, tx *Tx, qi QueryInput, qo QueryOutput, dest interface{}) error {
 	sstmt, err := getSelectStatement(qi.DataSet, qi.StatementKey, qi.Statement, qi.Suffix, qi.StmtAppends, dest)
 	if err != nil {
 		return err
@@ -107,7 +108,7 @@ func (sds *RdbmsDataStore) Fetch(tx *Tx, qi QueryInput, qo QueryOutput, dest int
 	}
 
 	if qo.rowFunction != nil {
-		rows, err := sds.FetchRows(tx, qi)
+		rows, err := sds.FetchRows(ctx, tx, qi)
 		if err != nil {
 			return err
 		}
@@ -131,15 +132,27 @@ func (sds *RdbmsDataStore) Fetch(tx *Tx, qi QueryInput, qo QueryOutput, dest int
 	} else {
 		switch qo.OutputFormat {
 		case JSON:
-			return sds.GetJSON(qo.Writer, qi, qo.Options)
+			return sds.GetJSON(ctx, qo.Writer, qi, qo.Options)
 		case CSV:
 			return errors.New("CSV is not implemented.")
 			//return sds.GetCSV()
 		default:
 			if isSlice(dest) {
-				err = sds.db.Select(dest, tx, sstmt, qi.BindParams...)
+				err = sds.db.SelectWithOptions(dest, RdbmsQueryOptions{
+					Tx:        tx,
+					Ctx:       ctx,
+					Statement: sstmt,
+					Params:    qi.BindParams,
+				})
+				//err = sds.db.Select(dest, tx, sstmt, qi.BindParams...)
 			} else {
-				err = sds.db.Get(dest, tx, sstmt, qi.BindParams...)
+				//err = sds.db.Get(dest, tx, sstmt, qi.BindParams...)
+				err = sds.db.GetWithOptions(dest, RdbmsQueryOptions{
+					Tx:        tx,
+					Ctx:       ctx,
+					Statement: sstmt,
+					Params:    qi.BindParams,
+				})
 			}
 		}
 
@@ -150,16 +163,21 @@ func (sds *RdbmsDataStore) Fetch(tx *Tx, qi QueryInput, qo QueryOutput, dest int
 	}
 }
 
-func (sds *RdbmsDataStore) FetchRows(tx *Tx, qi QueryInput) (Rows, error) {
+func (sds *RdbmsDataStore) FetchRows(ctx context.Context, tx *Tx, qi QueryInput) (Rows, error) {
 	sstmt, err := getSelectStatement(qi.DataSet, qi.StatementKey, qi.Statement, qi.Suffix, qi.StmtAppends, nil)
 	if err != nil {
 		return nil, err
 	}
-	return sds.db.Query(tx, sstmt, qi.BindParams...)
+	return sds.db.QueryWithOptions(RdbmsQueryOptions{
+		Tx:        tx,
+		Ctx:       ctx,
+		Statement: sstmt,
+		Params:    qi.BindParams,
+	})
 }
 
-func (sds *RdbmsDataStore) GetJSON(writer io.Writer, qi QueryInput, jo OutputOptions) error {
-	rows, err := sds.FetchRows(nil, qi)
+func (sds *RdbmsDataStore) GetJSON(ctx context.Context, writer io.Writer, qi QueryInput, jo OutputOptions) error {
+	rows, err := sds.FetchRows(ctx, NoTx, qi)
 	if err != nil {
 		if qi.PanicOnErr {
 			panic(err)
@@ -171,8 +189,8 @@ func (sds *RdbmsDataStore) GetJSON(writer io.Writer, qi QueryInput, jo OutputOpt
 	return RowsToJSON(writer, rows, jo.ToCamelCase, jo.IsArray, jo.DateFormat, jo.OmitNull)
 }
 
-func (sds *RdbmsDataStore) GetCSV(qi QueryInput, co OutputOptions) (string, error) {
-	rows, err := sds.FetchRows(nil, qi)
+func (sds *RdbmsDataStore) GetCSV(ctx context.Context, qi QueryInput, co OutputOptions) (string, error) {
+	rows, err := sds.FetchRows(ctx, NoTx, qi)
 	if err != nil {
 		log.Println(err)
 		return "", err

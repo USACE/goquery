@@ -1,6 +1,7 @@
 package goquery
 
 import (
+	"context"
 	"io"
 
 	"github.com/jackc/pgx/v5"
@@ -67,10 +68,10 @@ type DataStore interface {
 	Connection() interface{}
 	NewTransaction() (Tx, error)
 	Transaction(tf TransactionFunction) error
-	Fetch(tx *Tx, input QueryInput, output QueryOutput, dest any) error
-	FetchRows(tx *Tx, input QueryInput) (Rows, error)
-	GetJSON(writer io.Writer, input QueryInput, jo OutputOptions) error
-	GetCSV(input QueryInput, co OutputOptions) (string, error)
+	Fetch(ctx context.Context, tx *Tx, input QueryInput, output QueryOutput, dest any) error
+	FetchRows(ctx context.Context, tx *Tx, input QueryInput) (Rows, error)
+	GetJSON(ctx context.Context, writer io.Writer, input QueryInput, jo OutputOptions) error
+	GetCSV(ctx context.Context, input QueryInput, co OutputOptions) (string, error)
 	Select(stmt ...string) *FluentSelect
 	Insert(ds DataSet) *FluentInsert
 	//InsertRecs(ds DataSet, recs interface{}, batch bool, batchSize int, tx *Tx) error

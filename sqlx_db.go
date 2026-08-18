@@ -1,6 +1,7 @@
 package goquery
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -149,6 +150,13 @@ func (sdb *SqlxDb) querier(tx *Tx) sqlx.Queryer {
 	return sdb.db
 }
 
+func (sdb *SqlxDb) querierContext(tx *Tx) sqlx.QueryerContext {
+	if tx != nil {
+		return tx.SqlXTx()
+	}
+	return sdb.db
+}
+
 type sqlxexecr interface {
 	Exec(query string, args ...interface{}) (sql.Result, error)
 }
@@ -164,11 +172,21 @@ func (sdb *SqlxDb) Connection() interface{} {
 	return sdb.db
 }
 
-func (sdb *SqlxDb) Select(dest interface{}, tx *Tx, stmt string, params ...interface{}) error {
+func (sdb *SqlxDb) Select(dest interface{}, tx *Tx, stmt string, params ...any) error {
 	if len(params) == 0 {
 		return sqlx.Select(sdb.querier(tx), dest, stmt)
 	}
 	return sqlx.Select(sdb.querier(tx), dest, stmt, params...)
+}
+
+func (sdb *SqlxDb) SelectWithOptions(dest any, opts RdbmsQueryOptions) error {
+	var ctx context.Context
+	if opts.Ctx != nil {
+		ctx = opts.Ctx
+	} else {
+		ctx = context.Background()
+	}
+	return sqlx.SelectContext(ctx, sdb.querierContext(opts.Tx), dest, opts.Statement, opts.Params...)
 }
 
 func (sdb *SqlxDb) Get(dest interface{}, tx *Tx, stmt string, params ...interface{}) error {
@@ -178,6 +196,16 @@ func (sdb *SqlxDb) Get(dest interface{}, tx *Tx, stmt string, params ...interfac
 	return sqlx.Get(sdb.querier(tx), dest, stmt, params...)
 }
 
+func (sdb *SqlxDb) GetWithOptions(dest any, opts RdbmsQueryOptions) error {
+	var ctx context.Context
+	if opts.Ctx != nil {
+		ctx = opts.Ctx
+	} else {
+		ctx = context.Background()
+	}
+	return sqlx.GetContext(ctx, sdb.querierContext(opts.Tx), dest, opts.Statement, opts.Params...)
+}
+
 func (sdb *SqlxDb) Query(tx *Tx, stmt string, params ...interface{}) (Rows, error) {
 	var rows *sql.Rows
 	var err error
@@ -185,6 +213,23 @@ func (sdb *SqlxDb) Query(tx *Tx, stmt string, params ...interface{}) (Rows, erro
 		rows, err = tx.SqlTx().Query(stmt, params...)
 	} else {
 		rows, err = sdb.db.Query(stmt, params...)
+	}
+	return &SqlRows{rows, nil, nil}, err
+}
+
+func (sdb *SqlxDb) QueryWithOptions(opts RdbmsQueryOptions) (Rows, error) {
+	var ctx context.Context
+	if opts.Ctx != nil {
+		ctx = opts.Ctx
+	} else {
+		ctx = context.Background()
+	}
+	var rows *sql.Rows
+	var err error
+	if opts.Tx != nil {
+		rows, err = opts.Tx.SqlTx().QueryContext(ctx, opts.Statement, opts.Params...)
+	} else {
+		rows, err = sdb.db.QueryContext(ctx, opts.Statement, opts.Params...)
 	}
 	return &SqlRows{rows, nil, nil}, err
 }
