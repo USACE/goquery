@@ -155,6 +155,9 @@ func NewPgxConnection(config *RdbmsConfig) (PgxDb, error) {
 	}
 	dburl = fmt.Sprintf("%s %s", dburl, dburlsuffix)
 	con, err := pgxpool.New(context.Background(), dburl)
+	if err != nil {
+		return PgxDb{}, err
+	}
 	pgDialect, ok := DbRegistry[pgDialectRegistryName]
 	if !ok {
 		return PgxDb{}, fmt.Errorf("uninitialized or unsupported driver.  make sure you imported the driver: (e.g., _ \"github.com/user/goquery/adapter/postgres\") ")
