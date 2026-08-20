@@ -59,27 +59,6 @@ func TagAsStringArray(tag string, data interface{}) []string {
 	return tags
 }
 
-/*
-// Return if not struct or pointer to struct.
-    if t.Kind() == reflect.Ptr {
-        t = t.Elem()
-    }
-    if t.Kind() != reflect.Struct {
-        return
-    }
-
-    // Iterate through fields collecting names in map.
-    for i := 0; i < t.NumField(); i++ {
-        sf := t.Field(i)
-        m[sf.Name] = struct{}{}
-
-        // Recurse into anonymous fields.
-        if sf.Anonymous {
-            collectFieldNames(sf.Type, m)
-        }
-    }
-*/
-
 func isSlice(data interface{}) bool {
 	rval := reflect.ValueOf(data)
 	val := reflect.Indirect(rval)
@@ -127,22 +106,6 @@ func StructToIArray(data interface{}) []interface{} {
 	return ia
 }
 
-/*
-func StructToIArray2(data interface{}) []interface{} {
-	rval := reflect.ValueOf(data)
-	val := reflect.Indirect(rval)
-	if val.Kind() == reflect.Slice {
-		val = val.Elem()
-	}
-	fieldNum := val.NumField()
-	ia := make([]interface{}, fieldNum)
-	for i := 0; i < fieldNum; i++ {
-		ia[i] = reflect.Indirect(val.Field(i)).Interface()
-	}
-	return ia
-}
-*/
-
 func StructToIArrayEx(data interface{}, excludeFields []string, tagField string, excludeTags []string) []interface{} {
 	val := reflect.ValueOf(data).Elem()
 	valtype := reflect.TypeOf(data).Elem()
@@ -173,12 +136,3 @@ func contains(s []string, e string) bool {
 	}
 	return false
 }
-
-/*
-func copyElem(source interface{}) interface{} {
-	typ := reflect.TypeOf(source).Elem()
-	dest := reflect.New(typ).Interface()
-	deepcopier.Copy(source).To(dest)
-	return dest
-}
-*/
