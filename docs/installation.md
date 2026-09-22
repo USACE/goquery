@@ -13,14 +13,14 @@ goquery v3 uses a modular adapter system. You must import the adapter for your d
 #### PostgreSQL
 ```bash
 go get github.com/usace/goquery/v3
-go get github.com/usace/goquery/v3/adapters/postgres
+go get github.com/usace/goquery/adapters/postgres/v3
 go get github.com/jackc/pgx/v4
 ```
 
 ```go
 import (
     _ "github.com/jackc/pgx/v4/stdlib"
-    _ "github.com/usace/goquery/v3/adapters/postgres"
+    _ "github.com/usace/goquery/adapters/postgres/v3"
     "github.com/usace/goquery/v3"
 )
 ```
@@ -28,14 +28,14 @@ import (
 #### DuckDB
 ```bash
 go get github.com/usace/goquery/v3
-go get github.com/usace/goquery/v3/adapters/duckdb
+go get github.com/usace/goquery/adapters/duckdb/v3
 go get github.com/duckdb/duckdb-go/v2
 ```
 
 ```go
 import (
     _ "github.com/duckdb/duckdb-go/v2"
-    _ "github.com/usace/goquery/v3/adapters/duckdb"
+    _ "github.com/usace/goquery/adapters/duckdb/v3"
     "github.com/usace/goquery/v3"
 )
 ```
@@ -43,14 +43,14 @@ import (
 #### SQLite (Native Go - No CGO)
 ```bash
 go get github.com/usace/goquery/v3
-go get github.com/usace/goquery/v3/adapters/sqlite
+go get github.com/usace/goquery/adapters/sqlite/v3
 go get modernc.org/sqlite
 ```
 
 ```go
 import (
     _ "modernc.org/sqlite"
-    _ "github.com/usace/goquery/v3/adapters/sqlite"
+    _ "github.com/usace/goquery/adapters/sqlite/v3"
     "github.com/usace/goquery/v3"
 )
 ```
@@ -58,14 +58,14 @@ import (
 #### SQLite (CGO)
 ```bash
 go get github.com/usace/goquery/v3
-go get github.com/usace/goquery/v3/adapters/sqlite
+go get github.com/usace/goquery/adapters/sqlite/v3
 go get github.com/mattn/go-sqlite3
 ```
 
 ```go
 import (
     _ "github.com/mattn/go-sqlite3"
-    _ "github.com/usace/goquery/v3/adapters/sqlite"
+    _ "github.com/usace/goquery/adapters/sqlite/v3"
     "github.com/usace/goquery/v3"
 )
 ```
@@ -73,14 +73,14 @@ import (
 #### Oracle
 ```bash
 go get github.com/usace/goquery/v3
-go get github.com/usace/goquery/v3/adapters/oracle
+go get github.com/usace/goquery/adapters/oracle/v3
 go get github.com/godror/godror
 ```
 
 ```go
 import (
     _ "github.com/godror/godror"
-    _ "github.com/usace/goquery/v3/adapters/oracle"
+    _ "github.com/usace/goquery/adapters/oracle/v3"
     "github.com/usace/goquery/v3"
 )
 ```
@@ -89,11 +89,11 @@ import (
 
 | Database | Driver Name | Adapter Import | Driver Import |
 |----------|-------------|----------------|---------------|
-| PostgreSQL | `pgx` | `github.com/usace/goquery/v3/adapters/postgres` | `github.com/jackc/pgx/v4/stdlib` |
-| DuckDB | `duckdb` | `github.com/usace/goquery/v3/adapters/duckdb` | `github.com/duckdb/duckdb-go/v2` |
-| SQLite (Native) | `sqlite` | `github.com/usace/goquery/v3/adapters/sqlite` | `modernc.org/sqlite` |
-| SQLite (CGO) | `sqlite3` | `github.com/usace/goquery/v3/adapters/sqlite` | `github.com/mattn/go-sqlite3` |
-| Oracle | `godror` | `github.com/usace/goquery/v3/adapters/oracle` | `github.com/godror/godror` |
+| PostgreSQL | `pgx` | `github.com/usace/goquery/adapters/postgres/v3` | `github.com/jackc/pgx/v4/stdlib` |
+| DuckDB | `duckdb` | `github.com/usace/goquery/adapters/duckdb/v3` | `github.com/duckdb/duckdb-go/v2` |
+| SQLite (Native) | `sqlite` | `github.com/usace/goquery/adapters/sqlite/v3` | `modernc.org/sqlite` |
+| SQLite (CGO) | `sqlite3` | `github.com/usace/goquery/adapters/sqlite/v3` | `github.com/mattn/go-sqlite3` |
+| Oracle | `godror` | `github.com/usace/goquery/adapters/oracle/v3` | `github.com/godror/godror` |
 
 ### Core Dependencies
 

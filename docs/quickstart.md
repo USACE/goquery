@@ -9,7 +9,7 @@ import (
     "context"
     "log"
     _ "github.com/jackc/pgx/v4/stdlib"
-    _ "github.com/usace/goquery/v3/adapters/postgres"
+    _ "github.com/usace/goquery/adapters/postgres/v3"
     "github.com/usace/goquery/v3"
 )
 

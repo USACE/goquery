@@ -103,7 +103,7 @@ import (
 ```go
 import (
     _ "github.com/jackc/pgx/v4/stdlib"
-    _ "github.com/usace/goquery/v3/adapters/postgres"  // New: adapter import required
+    _ "github.com/usace/goquery/adapters/postgres/v3"  // New: adapter import required
     "github.com/usace/goquery/v3"
 )
 ```
@@ -112,10 +112,10 @@ import (
 
 | Database | Adapter Import |
 |----------|----------------|
-| PostgreSQL | `_ "github.com/usace/goquery/v3/adapters/postgres"` |
-| DuckDB | `_ "github.com/usace/goquery/v3/adapters/duckdb"` |
-| SQLite | `_ "github.com/usace/goquery/v3/adapters/sqlite"` |
-| Oracle | `_ "github.com/usace/goquery/v3/adapters/oracle"` |
+| PostgreSQL | `_ "github.com/usace/goquery/adapters/postgres/v3"` |
+| DuckDB | `_ "github.com/usace/goquery/adapters/duckdb/v3"` |
+| SQLite | `_ "github.com/usace/goquery/adapters/sqlite/v3"` |
+| Oracle | `_ "github.com/usace/goquery/adapters/oracle/v3"` |
 
 ### 3. Update go.mod
 
@@ -129,10 +129,10 @@ go get github.com/usace/goquery@none
 go get github.com/usace/goquery/v3
 
 # Add adapter(s) you need
-go get github.com/usace/goquery/v3/adapters/postgres
-go get github.com/usace/goquery/v3/adapters/duckdb
-go get github.com/usace/goquery/v3/adapters/sqlite
-go get github.com/usace/goquery/v3/adapters/oracle
+go get github.com/usace/goquery/adapters/postgres/v3
+go get github.com/usace/goquery/adapters/duckdb/v3
+go get github.com/usace/goquery/adapters/sqlite/v3
+go get github.com/usace/goquery/adapters/oracle/v3
 
 # Clean up
 go mod tidy
